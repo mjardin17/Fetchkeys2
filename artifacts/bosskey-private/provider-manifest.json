@@ -1,0 +1,196 @@
+{
+  "manifestVersion": 1,
+  "project": {
+    "name": "BossLister",
+    "repository": "mjardin17/boss-listers-mvp",
+    "branch": "codex/integrate-hot-wheels",
+    "startingCommit": "8c47e1e22ec08204391924db350398cd3e73fba8"
+  },
+  "scan": {
+    "sources": [".env.example", ".env.local", "package.json", "API routes", "imports", "marketplace modules", "Supabase migrations", "Docker files", "deployment files", "webhook and callback URLs"],
+    "secretValuesIncluded": false,
+    "environmentRepair": "atomic, comment-preserving, CRLF-aware"
+  },
+  "providers": [
+    {
+      "slug": "supabase",
+      "name": "Supabase",
+      "category": "infrastructure",
+      "whyDetected": "Supabase CLI commands and database environment references were provided for the BossLister project.",
+      "requiredVariables": ["SUPABASE_URL", "SUPABASE_ANON_KEY", "SUPABASE_SERVICE_ROLE_KEY"],
+      "requiredScopes": ["database", "storage"],
+      "status": "NEEDS_AUTHORIZATION"
+    },
+    {
+      "slug": "github",
+      "name": "GitHub",
+      "category": "development",
+      "whyDetected": "The source repository is hosted on GitHub and is used for project discovery.",
+      "requiredVariables": ["GITHUB_CLIENT_ID", "GITHUB_CLIENT_SECRET"],
+      "requiredScopes": ["repo", "read:org", "workflow"],
+      "status": "OAUTH_AVAILABLE"
+    },
+    {
+      "slug": "openai",
+      "name": "OpenAI",
+      "category": "ai",
+      "whyDetected": "AI provider references are part of the BossLister integration surface.",
+      "requiredVariables": ["OPENAI_API_KEY"],
+      "requiredScopes": ["models.read", "responses.create"],
+      "status": "API_KEY_AVAILABLE"
+    },
+    {
+      "slug": "ebay",
+      "name": "eBay",
+      "category": "marketplace",
+      "whyDetected": "Marketplace publishing and inventory synchronization are core BossLister operations.",
+      "requiredVariables": ["EBAY_CLIENT_ID", "EBAY_CLIENT_SECRET", "EBAY_REFRESH_TOKEN"],
+      "requiredScopes": ["sell.inventory", "sell.fulfillment"],
+      "status": "OAUTH_AVAILABLE"
+    },
+    {
+      "slug": "amazon-sp-api",
+      "name": "Amazon Selling Partner API",
+      "category": "marketplace",
+      "whyDetected": "Amazon is a requested production connector for product and order workflows.",
+      "requiredVariables": ["AMAZON_LWA_CLIENT_ID", "AMAZON_LWA_CLIENT_SECRET", "AMAZON_REFRESH_TOKEN", "AMAZON_SELLER_ID"],
+      "requiredScopes": ["catalog", "inventory", "orders"],
+      "status": "PARTNER_ACCESS_REQUIRED"
+    },
+    {
+      "slug": "etsy",
+      "name": "Etsy",
+      "category": "marketplace",
+      "whyDetected": "Etsy is a requested production connector for listing and inventory workflows.",
+      "requiredVariables": ["ETSY_API_KEY", "ETSY_SHARED_SECRET", "ETSY_REFRESH_TOKEN"],
+      "requiredScopes": ["shops_r", "listings_r", "listings_w", "transactions_r"],
+      "status": "OAUTH_AVAILABLE"
+    },
+    {
+      "slug": "shopify",
+      "name": "Shopify",
+      "category": "marketplace",
+      "whyDetected": "Shopify is a requested production connector and a BossLister sales channel.",
+      "requiredVariables": ["SHOPIFY_SHOP_DOMAIN", "SHOPIFY_ACCESS_TOKEN"],
+      "requiredScopes": ["read_products", "write_products", "read_inventory", "write_inventory"],
+      "status": "OAUTH_AVAILABLE"
+    },
+    {
+      "slug": "woocommerce",
+      "name": "WooCommerce",
+      "category": "marketplace",
+      "whyDetected": "WooCommerce is a requested production connector for product, inventory and order workflows.",
+      "requiredVariables": ["WOOCOMMERCE_BASE_URL", "WOOCOMMERCE_CONSUMER_KEY", "WOOCOMMERCE_CONSUMER_SECRET"],
+      "requiredScopes": ["read/write products", "read/write orders"],
+      "status": "API_KEY_AVAILABLE"
+    },
+    {
+      "slug": "walmart-marketplace",
+      "name": "Walmart Marketplace",
+      "category": "marketplace",
+      "whyDetected": "Walmart Marketplace is listed as a first production-ready connector.",
+      "requiredVariables": ["WALMART_CLIENT_ID", "WALMART_CLIENT_SECRET", "WALMART_CHANNEL_TYPE"],
+      "requiredScopes": ["items", "inventory", "orders"],
+      "status": "PARTNER_ACCESS_REQUIRED"
+    },
+    {
+      "slug": "google-merchant-center",
+      "name": "Google Merchant Center",
+      "category": "marketplace",
+      "whyDetected": "Google Merchant Center is a requested production connector for product feeds.",
+      "requiredVariables": ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "GOOGLE_REFRESH_TOKEN", "GOOGLE_MERCHANT_ID"],
+      "requiredScopes": ["https://www.googleapis.com/auth/content"],
+      "status": "OAUTH_AVAILABLE"
+    },
+    {
+      "slug": "meta-pages-instagram",
+      "name": "Meta Pages / Instagram Professional",
+      "category": "social",
+      "whyDetected": "Meta Pages and Instagram Professional are requested social publishing channels.",
+      "requiredVariables": ["META_APP_ID", "META_APP_SECRET", "META_PAGE_ACCESS_TOKEN", "META_IG_USER_ID"],
+      "requiredScopes": ["pages_manage_posts", "pages_read_engagement", "instagram_content_publish"],
+      "status": "OAUTH_AVAILABLE"
+    },
+    {
+      "slug": "tiktok",
+      "name": "TikTok",
+      "category": "social",
+      "whyDetected": "TikTok and TikTok Shop are requested social and commerce channels.",
+      "requiredVariables": ["TIKTOK_CLIENT_KEY", "TIKTOK_CLIENT_SECRET", "TIKTOK_ACCESS_TOKEN"],
+      "requiredScopes": ["video.publish", "user.info.basic"],
+      "status": "ACCESS_GATED"
+    },
+    {
+      "slug": "youtube",
+      "name": "YouTube",
+      "category": "social",
+      "whyDetected": "YouTube and Shorts publishing are requested channels.",
+      "requiredVariables": ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "YOUTUBE_REFRESH_TOKEN"],
+      "requiredScopes": ["https://www.googleapis.com/auth/youtube.upload"],
+      "status": "OAUTH_AVAILABLE"
+    },
+    {
+      "slug": "pinterest",
+      "name": "Pinterest",
+      "category": "social",
+      "whyDetected": "Pinterest is a requested social publishing and commerce channel.",
+      "requiredVariables": ["PINTEREST_APP_ID", "PINTEREST_APP_SECRET", "PINTEREST_ACCESS_TOKEN"],
+      "requiredScopes": ["boards:read", "pins:read", "pins:write"],
+      "status": "OAUTH_AVAILABLE"
+    },
+    {
+      "slug": "abebooks",
+      "name": "AbeBooks",
+      "category": "books",
+      "whyDetected": "AbeBooks is explicitly listed as a books destination.",
+      "requiredVariables": ["ABEBOOKS_SELLER_ID"],
+      "requiredScopes": [],
+      "status": "MANUAL_GUIDED"
+    },
+    {
+      "slug": "google-books",
+      "name": "Google Books",
+      "category": "book-data",
+      "whyDetected": "Google Books is requested for ISBN and book metadata research.",
+      "requiredVariables": ["GOOGLE_BOOKS_API_KEY"],
+      "requiredScopes": [],
+      "status": "IMPLEMENTED_AUTOMATIC"
+    },
+    {
+      "slug": "open-library",
+      "name": "Open Library",
+      "category": "book-data",
+      "whyDetected": "Open Library is requested for public ISBN and cover metadata.",
+      "requiredVariables": [],
+      "requiredScopes": [],
+      "status": "IMPLEMENTED_AUTOMATIC"
+    },
+    {
+      "slug": "cardtrader",
+      "name": "CardTrader",
+      "category": "cards",
+      "whyDetected": "CardTrader is listed as a cards marketplace and first production connector.",
+      "requiredVariables": ["CARDTRADER_API_TOKEN"],
+      "requiredScopes": ["inventory", "orders"],
+      "status": "ACCESS_GATED"
+    },
+    {
+      "slug": "pricecharting",
+      "name": "PriceCharting",
+      "category": "cards",
+      "whyDetected": "PriceCharting is requested for authorized catalog and price lookup.",
+      "requiredVariables": ["PRICECHARTING_API_KEY"],
+      "requiredScopes": ["price lookup"],
+      "status": "API_KEY_AVAILABLE"
+    },
+    {
+      "slug": "psa",
+      "name": "PSA Certification",
+      "category": "cards",
+      "whyDetected": "PSA certification verification is requested for graded card records.",
+      "requiredVariables": [],
+      "requiredScopes": [],
+      "status": "MANUAL_GUIDED"
+    }
+  ]
+}

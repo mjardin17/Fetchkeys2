@@ -1,0 +1,568 @@
+Build “BossKey Private” for BossLister
+
+Build a complete, working, private developer application named BossKey Private. Do not stop at a design, mockup, prototype, architecture document, or landing page. Generate the functioning application, Docker configuration, database, provider adapters, tests, scripts, and documentation.
+
+Main objective
+
+Create a local developer credential and integration control center for my existing BossLister application.
+
+BossKey Private must:
+
+Inspect BossLister and discover every external API, OAuth connection, token, callback, webhook, marketplace, social platform, AI provider, database, storage service, and deployment service it needs.
+Help me legally obtain and configure credentials from official provider portals for accounts I own or am authorized to manage.
+Store credentials privately and encrypted.
+Validate connections and repair configuration problems.
+Let BossLister publish products and social content through authorized APIs.
+Have dedicated Books, Cards, General Merchandise, and Social Media sections.
+Ask for authorization once per provider/project, save the encrypted authorization, and automatically resume the workflow while permission remains valid.
+Never repeatedly ask the same setup questions.
+Clearly distinguish automatic API support from partner-restricted, file-upload, and manual-guided support.
+Do not claim that credentials can be stolen, scraped, bypassed, or generated without provider authorization. Never extract browser cookies, passwords, sessions, MFA codes, CAPTCHA answers, or credentials from accounts I do not own.
+
+BossLister source
+
+Inspect:
+
+GitHub repository: mjardin17/boss-listers-mvp
+Branch: codex/integrate-hot-wheels
+Starting commit: 8c47e1e22ec08204391924db350398cd3e73fba8
+Windows project path: C:\Users\jjard\OneDrive\Documents\boss lister mvp\boss-listers-mvp
+Before changing BossLister, create a timestamped backup.
+
+Scan:
+
+.env.example
+.env.local without displaying secret values
+package.json
+API routes
+imports
+marketplace modules
+Supabase migrations
+Docker files
+deployment files
+webhook and callback URLs
+environment-variable references
+Create provider-manifest.json showing why each provider was detected, the required variables, required scopes, and current configuration status.
+
+Detect malformed environment variables, including quotes accidentally placed before variable names. Back up and repair .env.local atomically, preserve unrelated values and comments, support Windows CRLF endings, and ensure secrets are ignored by Git. Never print secrets in logs, tests, browser responses, screenshots, or error messages.
+
+Private local deployment
+
+BossKey Private must be a separate project and run alongside BossLister.
+
+Requirements:
+
+Docker Desktop compatible
+One lightweight container when possible
+Bind only to 127.0.0.1
+Default URL: http://127.0.0.1:4789
+No public exposure by default
+No Docker socket mounting
+Non-root container user
+Health check
+Resource limits suitable for an 8 GB Windows computer
+SQLite in a named Docker volume
+No additional Postgres or Redis requirement
+Multi-stage production Dockerfile
+docker-compose.yml
+Telemetry and analytics disabled by default
+Strict CSP, CSRF protection, rate limiting, SSRF protection and outbound-domain allowlists
+Verify TLS certificates
+Automatic local lock after inactivity
+Provide PowerShell scripts:
+
+start.ps1
+stop.ps1
+diagnose.ps1
+backup.ps1
+restore.ps1
+Credential security
+
+Use established audited libraries. Do not invent encryption.
+
+Implement:
+
+Master password
+Argon2id key derivation
+XChaCha20-Poly1305 through libsodium, or AES-256-GCM through a proven library
+Unique nonce for every encrypted value
+Authenticated metadata
+Master key held only in memory
+Auto-lock
+Encrypted backup/export
+Reauthentication before one-time secret reveal
+Clipboard auto-clear
+Complete log redaction
+Secret metadata can be shown, but plaintext values stay hidden
+Separate development, sandbox and production credentials
+Scoped access by project, provider and operation
+Credential expiration warnings
+Rotation and revocation where the provider officially supports them
+Never send credentials to Replit AI, analytics services, browser logs, client-side telemetry or third parties.
+
+Developer-agent interface
+
+Expose a private localhost REST API and local MCP server so authorized developer agents can continue setup without repeatedly asking me.
+
+Include these operations:
+
+discover_project
+list_required_providers
+get_connection_status
+start_provider_authorization
+validate_connection
+repair_project_environment
+inject_project_environment
+rotate_credential
+revoke_credential
+resume_workflow
+publish_listing
+update_inventory
+fetch_orders
+publish_social_post
+Agents should receive opaque credential handles rather than raw secret values whenever possible.
+
+Implement a permission rule such as:
+
+Always allow this provider for this project and these scopes until revoked or expired.
+
+Show the exact provider, project, account, scopes, environment and actions before that rule is approved. Destructive actions and production-key revocation still require explicit authorization unless I created a prior rule covering them.
+
+Provider workflow engine
+
+Use these durable workflow states:
+
+DISCOVERED
+NEEDS_DEVELOPER_APP
+NEEDS_AUTHORIZATION
+AUTHORIZED
+RUNNING
+NEEDS_UNAVOIDABLE_USER_ACTION
+COMPLETED
+FAILED_RETRYABLE
+BLOCKED_BY_PROVIDER
+Persist checkpoints. Resume after OAuth callbacks, restarts and temporary errors. Use idempotency keys, retry limits, exponential backoff and a dead-letter queue. Never create duplicate listings, inventory adjustments or social posts.
+
+Provider adapter contract
+
+Every adapter must implement the relevant parts of:
+
+discovery
+official documentation URL
+official developer portal URL
+authentication type
+required credential fields
+OAuth PKCE or device flow
+required scopes
+sandbox and production configuration
+callback configuration
+webhook configuration
+connection validation
+token refresh
+rotation
+revocation
+listing creation
+inventory updates
+order retrieval
+social publishing
+guided setup instructions
+Assign one honest status:
+
+IMPLEMENTED_AUTOMATIC
+OAUTH_AVAILABLE
+API_KEY_AVAILABLE
+PARTNER_ACCESS_REQUIRED
+ACCESS_GATED
+CSV_UPLOAD
+FTP_UPLOAD
+MANUAL_GUIDED
+NO_PUBLIC_API
+UNVERIFIED
+For providers without a public API, do not scrape them. Open the exact official developer or seller page, present a provider-specific checklist, accept information through the encrypted local form, validate what can be validated, and resume. Never label a guided workflow as automatic.
+
+Dedicated Books section
+
+Create a complete book inventory model:
+
+ISBN-10 and ISBN-13
+title and subtitle
+author
+edition
+printing
+publisher
+publication year
+binding
+language
+signed
+first edition
+dust jacket
+condition and condition notes
+SKU
+quantity
+cost paid
+price
+weight
+dimensions
+photographs
+storage location
+Seed and research official support for:
+
+Amazon Seller/SP-API
+eBay
+AbeBooks
+Alibris
+Biblio
+Etsy
+Bonanza
+Facebook Marketplace
+Shopify
+WooCommerce
+PangoBooks
+Powell’s
+Half Price Books
+BookScouter vendor network
+Decluttr
+Ziffit
+SellBackYourBook
+TextbookRush
+ValoreBooks
+eCampus
+Amazon KDP
+IngramSpark
+Draft2Digital
+Lulu
+Barnes & Noble Press
+Kobo Writing Life
+Apple Books
+Google Play Books
+Bookshop.org
+Blurb
+BookVault
+Book data providers:
+
+Google Books
+Open Library
+WorldCat/OCLC current APIs
+ISBNdb
+Use APIs where officially offered. Support approved CSV, UIEE and FTP workflows where appropriate. Treat publishing platforms such as KDP as guided/manual unless an official public API explicitly supports the requested operation.
+
+Dedicated Cards section
+
+Support sports cards, trading cards and collectible card games.
+
+Card data model:
+
+sport or game
+year
+manufacturer
+set
+player or character
+team
+card number
+parallel
+insert
+variation
+rarity
+language
+autograph
+memorabilia
+serial number
+raw or graded
+grading company
+grade
+certification number
+condition notes
+SKU
+quantity
+cost
+price
+photographs
+storage location
+Seed and research official support for:
+
+eBay
+Whatnot
+TCGplayer
+Cardmarket
+CardTrader
+COMC
+CollX
+MySlabs
+Fanatics Collect
+Fanatics Live
+Goldin
+Heritage Auctions
+Pristine Auction
+Alt
+Arena Club
+Rare Candy
+Veriswap
+Sportlots
+Beckett Marketplace
+StockX
+GOAT
+Drip Shop Live
+PriceCharting Marketplace
+SportsCardsPro Marketplace
+Mercari
+Facebook Marketplace
+OfferUp
+Craigslist
+Amazon
+Walmart Marketplace
+Shopify
+WooCommerce
+eBid
+Card information and verification providers:
+
+TCGplayer
+Cardmarket
+CardTrader
+PriceCharting
+SportsCardsPro
+PSA certification verification
+Scryfall
+Pokémon TCG API
+JustTCG
+CGC, Beckett and SGC verification when officially available
+Mark Whatnot, TCGplayer, Cardmarket and any other closed programs as access-gated when onboarding is unavailable. Do not scrape COMC, CollX, 130point, Card Ladder, Market Movers, Collectr, Ludex or similar services if they do not provide authorized developer access.
+
+Image recognition may identify a possible card, but it must never invent a market price or sold comparison.
+
+General merchandise marketplaces
+
+Create provider records for as many legitimate selling platforms as possible, including:
+
+Amazon
+eBay
+Walmart Marketplace
+Etsy
+TikTok Shop
+Meta Commerce
+Shopify
+WooCommerce
+BigCommerce
+Wix Stores
+Squarespace Commerce
+Square Online
+Ecwid
+Bonanza
+Reverb
+Discogs
+Newegg
+Google Merchant Center
+Pinterest Shopping
+Mercado Libre
+AliExpress
+Alibaba
+Shopee
+Lazada
+Rakuten
+Allegro
+bol.com
+Kaufland
+OnBuy
+Cdiscount
+Fnac/Darty
+Mirakl marketplaces
+Back Market
+Faire
+Temu Seller
+SHEIN Marketplace
+Wish
+Poshmark
+Mercari
+Depop
+Vinted
+Grailed
+Facebook Marketplace
+OfferUp
+Craigslist
+Nextdoor
+eBid
+Ruby Lane
+Chairish
+1stDibs
+Swappa
+Chrono24
+Vestiaire Collective
+The RealReal
+ThredUp
+Catawiki
+Delcampe
+HipComic
+HipStamp
+MyComicShop
+Gumroad
+Payhip
+Sellfy
+Ko-fi Shop
+Fourthwall
+Printful
+Printify
+Gelato
+Redbubble
+TeePublic
+Zazzle
+Society6
+Spring
+Spreadshirt
+CafePress
+Research official current documentation before assigning capabilities. Regional and partner-only services must remain in the registry even when they can only be guided.
+
+Social-media section
+
+Support authorized publishing, scheduling, analytics and commerce links where officially permitted.
+
+Seed:
+
+Facebook Pages
+Instagram Professional
+Threads
+TikTok
+YouTube
+YouTube Shorts
+LinkedIn personal and organization pages
+X
+Pinterest
+Reddit
+Snapchat
+Bluesky
+Mastodon
+Tumblr
+Discord
+Telegram
+WhatsApp Business
+Twitch
+Vimeo
+Dailymotion
+Slack
+Google Business Profile
+Yelp
+Nextdoor
+Medium
+Substack
+Quora
+Rumble
+LINE
+WeChat
+Do not automate personal Facebook profiles or unsupported personal marketplace actions. Use official APIs and approved account types. Create channel-specific transformations for character limits, image sizes, video ratios, hashtags, links and scheduling.
+
+Cross-listing and inventory protection
+
+Create a canonical product model and provider-specific field mappings.
+
+Implement:
+
+central inventory quantity
+reservations during pending sales
+overselling prevention
+marketplace SKU mapping
+webhook processing
+scheduled reconciliation when webhooks are unavailable
+order import
+price updates
+listing update/end operations
+per-channel fees
+shipping
+packaging cost
+cost paid
+profit
+margin
+ROI
+break-even price
+audit history
+idempotent publishing
+Never fabricate sold comparisons or confidence scores. If an authorized sold-data source is unavailable, display:
+
+Sold market data unavailable — provider access or manual comparable sales required.
+
+First production-ready connectors
+
+Fully implement and test these first:
+
+Supabase
+OpenAI
+GitHub
+eBay
+Amazon SP-API
+Etsy
+Shopify
+WooCommerce
+Walmart Marketplace
+Google Merchant Center
+Meta Pages/Instagram
+TikTok/TikTok Shop
+YouTube
+Pinterest
+AbeBooks
+Google Books
+Open Library
+CardTrader
+PriceCharting
+PSA certification verification
+Then add adapter records and guided workflows for every other listed provider. The architecture must allow another provider to be added without changing the vault or core workflow engine.
+
+User interface
+
+Preserve BossLister’s mobile-first dark style.
+
+Dashboard cards:
+
+BossLister readiness score
+missing connections
+expiring tokens
+failed validations
+paused workflows
+Books
+Cards
+General Merchandise
+Social Media
+Marketplace listings
+Orders
+Inventory conflicts
+security alerts
+Every provider page must show:
+
+capability status
+official documentation
+official developer portal
+access type
+requested scopes
+sandbox/production
+callback/webhook requirements
+connection validation result
+last successful sync
+last verified date
+next required action
+Testing and acceptance
+
+Include:
+
+unit tests for encryption, redaction, environment parsing and permission rules
+mocked provider contract tests
+OAuth callback tests
+webhook signature tests
+Playwright end-to-end tests
+restart/resume tests
+duplicate-listing protection tests
+tests proving secrets never appear in logs or browser responses
+typecheck
+production build
+Docker health test
+The work is complete only when:
+
+Docker starts with one PowerShell command
+the private dashboard opens locally
+BossLister is discovered
+its required provider manifest is generated
+environment-format problems can be repaired safely
+supported connections validate
+unavailable connections show an exact honest reason
+workflows resume after authorization
+no secret is committed or logged
+Books and Cards have separate complete sections
+all marketplace and social-provider records are searchable and filterable
+tests, typecheck and production build pass
+Do not ask broad planning questions. Inspect the repository and begin implementing. Ask only for unavoidable provider authorization or account-specific information, one question at a time. After receiving an authorization, save the encrypted grant and automatically continue from the saved checkpoint.
+

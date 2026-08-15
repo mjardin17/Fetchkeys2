@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "BossKey Private"
+description = "A private local developer credential and integration control center for BossLister. It discovers project dependencies, protects credentials in an encrypted vault, validates authorized provider connections, and coordinates books, cards, merchandise, social publishing, and resumable workflows without exposing secrets."
+version = "1.0.0"
+id = "artifacts/bosskey-private"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 20041
+
+[services.development]
+run = "pnpm --filter @workspace/bosskey-private run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/bosskey-private", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/bosskey-private/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "20041"
+BASE_PATH = "/"

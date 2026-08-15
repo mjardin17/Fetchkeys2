@@ -10,6 +10,16 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: dashboard
+    description: BossKey dashboard and discovery operations
+  - name: providers
+    description: Provider registry and connection validation
+  - name: vault
+    description: Local vault metadata and safe actions
+  - name: workflows
+    description: Resumable provider workflows
+  - name: inventory
+    description: Canonical inventory and category records
 paths:
   /healthz:
     get:
@@ -24,7 +34,224 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /bosskey/overview:
+    get:
+      operationId: getBossKeyOverview
+      tags: [dashboard]
+      summary: Get the BossKey readiness overview
+      responses:
+        "200":
+          description: Overview
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BossKeyOverview"
+  /bosskey/discover:
+    post:
+      operationId: discoverBossLister
+      tags: [dashboard]
+      summary: Discover BossLister integrations and environment issues
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DiscoveryInput"
+      responses:
+        "200":
+          description: Discovery result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DiscoveryResult"
+  /bosskey/providers:
+    get:
+      operationId: listBossKeyProviders
+      tags: [providers]
+      summary: List searchable provider records
+      parameters:
+        - name: category
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Providers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Provider"
+  /bosskey/providers/{slug}:
+    get:
+      operationId: getBossKeyProvider
+      tags: [providers]
+      summary: Get provider details
+      parameters:
+        - $ref: "#/components/parameters/ProviderSlug"
+      responses:
+        "200":
+          description: Provider
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Provider"
+        "404":
+          description: Provider not found
+    post:
+      operationId: validateBossKeyProvider
+      tags: [providers]
+      summary: Validate an authorized provider connection
+      parameters:
+        - $ref: "#/components/parameters/ProviderSlug"
+      responses:
+        "200":
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationResult"
+  /bosskey/vault/status:
+    get:
+      operationId: getBossKeyVaultStatus
+      tags: [vault]
+      summary: Get non-secret vault status
+      responses:
+        "200":
+          description: Vault status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VaultStatus"
+  /bosskey/vault/lock:
+    post:
+      operationId: lockBossKeyVault
+      tags: [vault]
+      summary: Lock the local vault
+      responses:
+        "200":
+          description: Locked
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VaultStatus"
+  /bosskey/workflows:
+    get:
+      operationId: listBossKeyWorkflows
+      tags: [workflows]
+      summary: List resumable workflows
+      responses:
+        "200":
+          description: Workflows
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Workflow"
+  /bosskey/workflows/{workflowId}/resume:
+    post:
+      operationId: resumeBossKeyWorkflow
+      tags: [workflows]
+      summary: Resume a paused workflow
+      parameters:
+        - $ref: "#/components/parameters/WorkflowId"
+      responses:
+        "200":
+          description: Workflow
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Workflow"
+  /bosskey/inventory:
+    get:
+      operationId: listBossKeyInventory
+      tags: [inventory]
+      summary: List canonical inventory
+      parameters:
+        - name: category
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Inventory
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/InventoryItem"
+    post:
+      operationId: createBossKeyInventoryItem
+      tags: [inventory]
+      summary: Add an inventory item
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InventoryInput"
+      responses:
+        "201":
+          description: Inventory item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InventoryItem"
+  /bosskey/inventory/{itemId}:
+    patch:
+      operationId: updateBossKeyInventoryItem
+      tags: [inventory]
+      summary: Update inventory quantity or pricing
+      parameters:
+        - $ref: "#/components/parameters/ItemId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InventoryUpdate"
+      responses:
+        "200":
+          description: Inventory item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InventoryItem"
 components:
+  parameters:
+    ProviderSlug:
+      name: slug
+      in: path
+      required: true
+      schema:
+        type: string
+    WorkflowId:
+      name: workflowId
+      in: path
+      required: true
+      schema:
+        type: string
+    ItemId:
+      name: itemId
+      in: path
+      required: true
+      schema:
+        type: string
   schemas:
     HealthStatus:
       type: object
@@ -33,4 +260,124 @@ components:
           type: string
       required:
         - status
+    BossKeyOverview:
+      type: object
+      required: [readinessScore, missingConnections, expiringTokens, failedValidations, pausedWorkflows, inventoryConflicts, securityAlerts, discoveredAt]
+      properties:
+        readinessScore: { type: number, minimum: 0, maximum: 100 }
+        missingConnections: { type: number, minimum: 0 }
+        expiringTokens: { type: number, minimum: 0 }
+        failedValidations: { type: number, minimum: 0 }
+        pausedWorkflows: { type: number, minimum: 0 }
+        inventoryConflicts: { type: number, minimum: 0 }
+        securityAlerts: { type: number, minimum: 0 }
+        discoveredAt: { type: string }
+    DiscoveryInput:
+      type: object
+      properties:
+        projectPath: { type: string }
+        repository: { type: string }
+        branch: { type: string }
+    DiscoveryResult:
+      type: object
+      required: [projectName, repository, branch, providersFound, environmentIssues, backupCreated, manifestPath, completedAt]
+      properties:
+        projectName: { type: string }
+        repository: { type: string }
+        branch: { type: string }
+        providersFound: { type: number }
+        environmentIssues: { type: number }
+        backupCreated: { type: boolean }
+        manifestPath: { type: string }
+        completedAt: { type: string }
+    Provider:
+      type: object
+      required: [slug, name, category, status, accessType, docsUrl, developerUrl, scopes, environments, nextAction, lastVerified]
+      properties:
+        slug: { type: string }
+        name: { type: string }
+        category: { type: string }
+        status: { type: string }
+        accessType: { type: string }
+        docsUrl: { type: string }
+        developerUrl: { type: string }
+        scopes:
+          type: array
+          items: { type: string }
+        environments:
+          type: array
+          items: { type: string }
+        nextAction: { type: string }
+        lastVerified: { type: string }
+        validationMessage: { type: ["string", "null"] }
+        supports: 
+          type: array
+          items: { type: string }
+    ValidationResult:
+      type: object
+      required: [providerSlug, status, message, checkedAt]
+      properties:
+        providerSlug: { type: string }
+        status: { type: string }
+        message: { type: string }
+        checkedAt: { type: string }
+    VaultStatus:
+      type: object
+      required: [state, credentialCount, environmentCount, autoLockMinutes, telemetryEnabled]
+      properties:
+        state: { type: string }
+        credentialCount: { type: number }
+        environmentCount: { type: number }
+        autoLockMinutes: { type: number }
+        telemetryEnabled: { type: boolean }
+        lastUnlockedAt: { type: ["string", "null"] }
+    Workflow:
+      type: object
+      required: [id, providerSlug, action, state, progress, checkpoint, updatedAt]
+      properties:
+        id: { type: string }
+        providerSlug: { type: string }
+        action: { type: string }
+        state: { type: string }
+        progress: { type: number, minimum: 0, maximum: 100 }
+        checkpoint: { type: string }
+        updatedAt: { type: string }
+        nextAction: { type: ["string", "null"] }
+    InventoryItem:
+      type: object
+      required: [id, category, title, sku, quantity, price, cost, status]
+      properties:
+        id: { type: string }
+        category: { type: string }
+        title: { type: string }
+        sku: { type: string }
+        quantity: { type: number, minimum: 0 }
+        price: { type: number, minimum: 0 }
+        cost: { type: number, minimum: 0 }
+        status: { type: string }
+        metadata:
+          type: object
+          additionalProperties: true
+    InventoryInput:
+      type: object
+      required: [category, title, sku, quantity, price, cost]
+      properties:
+        category: { type: string }
+        title: { type: string }
+        sku: { type: string }
+        quantity: { type: number, minimum: 0 }
+        price: { type: number, minimum: 0 }
+        cost: { type: number, minimum: 0 }
+        metadata:
+          type: object
+          additionalProperties: true
+    InventoryUpdate:
+      type: object
+      properties:
+        quantity: { type: number, minimum: 0 }
+        price: { type: number, minimum: 0 }
+        status: { type: string }
+        metadata:
+          type: object
+          additionalProperties: true
 
